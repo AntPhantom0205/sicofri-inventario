@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../Sicofri.Shared/Sicofri.Shared.csproj" />
+  <Project Path="Sicofri.API/Sicofri.API.csproj" />
+</Solution>
