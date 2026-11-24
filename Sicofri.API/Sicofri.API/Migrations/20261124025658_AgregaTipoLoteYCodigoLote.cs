@@ -45,6 +45,6 @@ namespace Sicofri.API.Migrations
             migrationBuilder.DropColumn(
                 name: "tipo_lote",
                 table: "producto");
-        }
-    }
-}
+        }//Fin del metodo Down
+    }//Fin de la clase AgregaTipoLoteYCodigoLote
+}//Fin de la clase

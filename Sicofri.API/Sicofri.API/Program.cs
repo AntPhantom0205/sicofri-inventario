@@ -17,9 +17,12 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. Controladores y documentacion
 
 builder.Services.AddControllers()
-    // Los enums viajan como texto ("Jefe") en lugar de numero (1).
+    // Los enums viajan como texto ("Jefe") en lugar de número (1).
     .AddJsonOptions(opciones =>
-        opciones.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+        opciones.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()))
+    // Errores de formato del JSON: respuesta en español indicando cada campo.
+    .ConfigureApiBehaviorOptions(opciones =>
+        opciones.InvalidModelStateResponseFactory = RespuestaValidacion.Crear);
 
 builder.Services.AddOpenApi(opciones =>
     opciones.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
@@ -61,6 +64,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromMinutes(1)
         };
+
+        // Respuestas claras en español para los errores 401 y 403.
+        opciones.Events = EventosJwt.Crear();
     });
 
 builder.Services.AddAuthorization();
@@ -75,6 +81,11 @@ builder.Services.AddSingleton<JwtService>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+
+//Repositorios y servicios: una instancia nueva por cada petición.
+builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
+builder.Services.AddScoped<IConfiguracionRepository, ConfiguracionRepository>();
+builder.Services.AddScoped<IProductoService, ProductoService>();
 
 // 5. Construir y configurar la aplicacion
 
