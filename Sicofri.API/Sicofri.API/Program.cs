@@ -1,27 +1,89 @@
+using System.Text;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Sicofri.API.Data;
+using Sicofri.API.Data.Seed;
+using Sicofri.API.Middleware;
+using Sicofri.API.Repositories;
+using Sicofri.API.Repositories.Interfaces;
+using Sicofri.API.Security;
+using Sicofri.API.Services;
+using Sicofri.API.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 1. Controladores y documentacion
 
-//------ Servicios -------
+builder.Services.AddControllers()
+    // Los enums viajan como texto ("Jefe") en lugar de numero (1).
+    .AddJsonOptions(opciones =>
+        opciones.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(opciones =>
+    opciones.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
+
+// 2. Base de datos
 
 var cadenaConexion = builder.Configuration.GetConnectionString("SicofriDb");
 if (string.IsNullOrWhiteSpace(cadenaConexion))
 {
     throw new InvalidOperationException(
-        "Falta la cadena de conexión 'SicofriDb'. Agréguela en los secretos de usuario.");
+        "Falta la cadena de conexion 'SicofriDb'. Agreguela en los secretos de usuario.");
 }
 
 builder.Services.AddDbContext<SicofriDbContext>(opciones =>
     opciones.UseNpgsql(cadenaConexion));
 
-// ---------- Aplicación ----------
+// 3. Autenticacion con JWT
+
+var jwt = builder.Configuration.GetSection(JwtSettings.Seccion).Get<JwtSettings>() ?? new JwtSettings();
+if (Encoding.UTF8.GetByteCount(jwt.Clave) < 32)
+{
+    throw new InvalidOperationException(
+        "La clave 'Jwt:Clave' falta o es muy corta (mínimo 32 caracteres). Revise los secretos de usuario.");
+}
+
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.Seccion));
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(opciones =>
+    {
+        opciones.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwt.Emisor,
+            ValidateAudience = true,
+            ValidAudience = jwt.Audiencia,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Clave)),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(1)
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+// 4. Inyeccion de dependencias (nuestras clases)
+
+// Herramientas sin estado: una sola instancia para toda la aplicacion.
+builder.Services.AddSingleton<PasswordHasher>();
+builder.Services.AddSingleton<JwtService>();
+
+// Repositorios y servicios: una instancia nueva por cada petición.
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+
+// 5. Construir y configurar la aplicacion
 
 var app = builder.Build();
+
+await DatosIniciales.CrearJefeInicialAsync(app.Services, app.Configuration);
+
+// Debe ir primero, para atrapar errores de todo lo que viene despues.
+app.UseMiddleware<ExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
@@ -31,7 +93,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// El orden importa: primero se define quien eres (autenticación), y despues ver lo que se puede hacer. (autorización).
+app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();
