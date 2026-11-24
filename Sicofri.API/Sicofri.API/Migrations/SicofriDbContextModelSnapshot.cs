@@ -250,6 +250,11 @@ namespace Sicofri.API.Migrations
                         .HasColumnType("numeric(10,2)")
                         .HasColumnName("cantidad");
 
+                    b.Property<string>("CodigoLote")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("codigo_lote");
+
                     b.Property<DateOnly>("FechaCaducidad")
                         .HasColumnType("date")
                         .HasColumnName("fecha_caducidad");
@@ -278,7 +283,15 @@ namespace Sicofri.API.Migrations
                         .HasColumnType("character varying(60)")
                         .HasColumnName("nombre_proveedor");
 
+                    b.Property<string>("TipoLote")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("tipo_lote");
+
                     b.HasKey("IdProducto");
+
+                    b.HasIndex("FechaCaducidad");
 
                     b.HasIndex("IdUbicacion");
 

@@ -1,4 +1,6 @@
-﻿namespace Sicofri.API.Entities;
+﻿using Sicofri.Shared.Enums;
+
+namespace Sicofri.API.Entities;
 
 /// <summary>
 /// Un lote de producto congelado en una ubicación específica.
@@ -11,6 +13,12 @@ public class Producto
     public int IdProducto { get; set; }
     public string Nombre { get; set; } = string.Empty;
     public string NombreProveedor { get; set; } = string.Empty;
+
+    /// <summary>Empacado, Fresco o CongeladoPropio.</summary>
+    public TipoLote TipoLote { get; set; }
+
+    /// <summary>Número de lote impreso por el proveedor. Obligatorio en los empacados.</summary>
+    public string? CodigoLote { get; set; }
 
     /// <summary>Cantidad disponible en kilogramos.</summary>
     public decimal Cantidad { get; set; }
