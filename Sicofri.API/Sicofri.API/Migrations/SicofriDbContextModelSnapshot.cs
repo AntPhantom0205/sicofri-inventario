@@ -219,9 +219,33 @@ namespace Sicofri.API.Migrations
                         .HasColumnType("date")
                         .HasColumnName("fecha_entrega");
 
+                    b.Property<DateTime?>("FechaHoraCancelado")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("fecha_hora_cancelado");
+
+                    b.Property<DateTime>("FechaHoraCreacion")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("fecha_hora_creacion");
+
+                    b.Property<DateTime?>("FechaHoraEntregado")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("fecha_hora_entregado");
+
                     b.Property<int>("IdCliente")
                         .HasColumnType("integer")
                         .HasColumnName("id_cliente");
+
+                    b.Property<int?>("IdUsuarioCancela")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_usuario_cancela");
+
+                    b.Property<int>("IdUsuarioCreador")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_usuario_creador");
+
+                    b.Property<int?>("IdUsuarioEntrega")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_usuario_entrega");
 
                     b.Property<int?>("IdViaje")
                         .HasColumnType("integer")
@@ -229,7 +253,17 @@ namespace Sicofri.API.Migrations
 
                     b.HasKey("IdPedido");
 
+                    b.HasIndex("Estado");
+
+                    b.HasIndex("FechaEntrega");
+
                     b.HasIndex("IdCliente");
+
+                    b.HasIndex("IdUsuarioCancela");
+
+                    b.HasIndex("IdUsuarioCreador");
+
+                    b.HasIndex("IdUsuarioEntrega");
 
                     b.HasIndex("IdViaje");
 
@@ -434,15 +468,40 @@ namespace Sicofri.API.Migrations
                         .HasColumnType("date")
                         .HasColumnName("fecha");
 
-                    b.Property<int>("IdUsuarioEncargado")
+                    b.Property<DateTime?>("FechaHoraFin")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("fecha_hora_fin");
+
+                    b.Property<DateTime?>("FechaHoraInicio")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("fecha_hora_inicio");
+
+                    b.Property<int>("IdUsuarioCreador")
                         .HasColumnType("integer")
-                        .HasColumnName("id_usuario_encargado");
+                        .HasColumnName("id_usuario_creador");
 
                     b.HasKey("IdViaje");
 
-                    b.HasIndex("IdUsuarioEncargado");
+                    b.HasIndex("IdUsuarioCreador");
 
                     b.ToTable("viaje");
+                });
+
+            modelBuilder.Entity("Sicofri.API.Entities.ViajeEncargado", b =>
+                {
+                    b.Property<int>("IdViaje")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_viaje");
+
+                    b.Property<int>("IdUsuario")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_usuario");
+
+                    b.HasKey("IdViaje", "IdUsuario");
+
+                    b.HasIndex("IdUsuario");
+
+                    b.ToTable("viaje_encargado");
                 });
 
             modelBuilder.Entity("Sicofri.API.Entities.LineaPedido", b =>
@@ -526,12 +585,34 @@ namespace Sicofri.API.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Sicofri.API.Entities.Usuario", "UsuarioCancela")
+                        .WithMany()
+                        .HasForeignKey("IdUsuarioCancela")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Sicofri.API.Entities.Usuario", "UsuarioCreador")
+                        .WithMany()
+                        .HasForeignKey("IdUsuarioCreador")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Sicofri.API.Entities.Usuario", "UsuarioEntrega")
+                        .WithMany()
+                        .HasForeignKey("IdUsuarioEntrega")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Sicofri.API.Entities.Viaje", "Viaje")
                         .WithMany("Pedidos")
                         .HasForeignKey("IdViaje")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Cliente");
+
+                    b.Navigation("UsuarioCancela");
+
+                    b.Navigation("UsuarioCreador");
+
+                    b.Navigation("UsuarioEntrega");
 
                     b.Navigation("Viaje");
                 });
@@ -549,13 +630,32 @@ namespace Sicofri.API.Migrations
 
             modelBuilder.Entity("Sicofri.API.Entities.Viaje", b =>
                 {
-                    b.HasOne("Sicofri.API.Entities.Usuario", "UsuarioEncargado")
-                        .WithMany("ViajesEncargados")
-                        .HasForeignKey("IdUsuarioEncargado")
+                    b.HasOne("Sicofri.API.Entities.Usuario", "UsuarioCreador")
+                        .WithMany()
+                        .HasForeignKey("IdUsuarioCreador")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("UsuarioEncargado");
+                    b.Navigation("UsuarioCreador");
+                });
+
+            modelBuilder.Entity("Sicofri.API.Entities.ViajeEncargado", b =>
+                {
+                    b.HasOne("Sicofri.API.Entities.Usuario", "Usuario")
+                        .WithMany("ViajesEncargados")
+                        .HasForeignKey("IdUsuario")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Sicofri.API.Entities.Viaje", "Viaje")
+                        .WithMany("Encargados")
+                        .HasForeignKey("IdViaje")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Usuario");
+
+                    b.Navigation("Viaje");
                 });
 
             modelBuilder.Entity("Sicofri.API.Entities.Cliente", b =>
@@ -589,6 +689,8 @@ namespace Sicofri.API.Migrations
 
             modelBuilder.Entity("Sicofri.API.Entities.Viaje", b =>
                 {
+                    b.Navigation("Encargados");
+
                     b.Navigation("Pedidos");
                 });
 #pragma warning restore 612, 618

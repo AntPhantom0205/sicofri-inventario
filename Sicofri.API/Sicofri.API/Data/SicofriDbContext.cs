@@ -26,6 +26,7 @@ public class SicofriDbContext : DbContext
     public DbSet<LineaPedido> LineasPedido => Set<LineaPedido>();
     public DbSet<Notificacion> Notificaciones => Set<Notificacion>();
     public DbSet<Configuracion> Configuraciones => Set<Configuracion>();
+    public DbSet<ViajeEncargado> ViajeEncargados => Set<ViajeEncargado>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

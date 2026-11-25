@@ -3,17 +3,23 @@
 namespace Sicofri.API.Entities;
 
 /// <summary>
-/// Ruta de entrega que agrupa varios pedidos, con un empleado encargado.
+/// Ruta de entrega que agrupa varios pedidos, con 1 a 3 empleados encargados.
 /// </summary>
-
 public class Viaje
 {
     public int IdViaje { get; set; }
     public DateOnly Fecha { get; set; }
     public EstadoViaje Estado { get; set; } = EstadoViaje.Programado;
 
-    public int IdUsuarioEncargado { get; set; }
-    public Usuario UsuarioEncargado { get; set; } = null!;
-    public ICollection<Pedido> Pedidos { get; set; } = new List<Pedido>();
+    /// <summary>Hora real en que los encargados iniciaron el viaje (UTC).</summary>
+    public DateTime? FechaHoraInicio { get; set; }
 
-}//Fin de la clase
+    /// <summary>Hora en que se entrego el ultimo pedido (UTC).</summary>
+    public DateTime? FechaHoraFin { get; set; }
+
+    public int IdUsuarioCreador { get; set; }
+    public Usuario UsuarioCreador { get; set; } = null!;
+
+    public ICollection<ViajeEncargado> Encargados { get; set; } = new List<ViajeEncargado>();
+    public ICollection<Pedido> Pedidos { get; set; } = new List<Pedido>();
+}//Fin de la clase Viaje

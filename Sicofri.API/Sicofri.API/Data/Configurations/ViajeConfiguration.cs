@@ -12,9 +12,9 @@ public class ViajeConfiguration : IEntityTypeConfiguration<Viaje>
 
         builder.Property(v => v.Estado).HasConversion<string>().HasMaxLength(15);
 
-        builder.HasOne(v => v.UsuarioEncargado)
-               .WithMany(u => u.ViajesEncargados)
-               .HasForeignKey(v => v.IdUsuarioEncargado)
+        builder.HasOne(v => v.UsuarioCreador)
+               .WithMany()
+               .HasForeignKey(v => v.IdUsuarioCreador)
                .OnDelete(DeleteBehavior.Restrict);
-    }//Fin del metodo ViajeConfiguration
-}//Fin de la clase
+    }//Fin del método Configure
+}//Fin de la clase ViajeConfiguration

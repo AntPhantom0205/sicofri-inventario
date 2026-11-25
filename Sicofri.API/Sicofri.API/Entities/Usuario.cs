@@ -20,7 +20,7 @@ public class Usuario
     /// </summary>
     public string? TokenFcm { get; set; }
 
-    public ICollection<Viaje> ViajesEncargados { get; set; } = new List<Viaje>();
+    public ICollection<ViajeEncargado> ViajesEncargados { get; set; } = new List<ViajeEncargado>();
     public ICollection<MovimientoTraslado> Movimientos { get; set; } = new List<MovimientoTraslado>();
 
 }//Fin de la clase

@@ -8,6 +8,7 @@ public enum EstadoViaje
 {
     Programado = 1,
     EnCurso = 2,
-    Finalizado = 3
+    Finalizado = 3,
+    Cancelado = 4
 
 }//Fin de la clase
