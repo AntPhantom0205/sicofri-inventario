@@ -87,6 +87,10 @@ builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 builder.Services.AddScoped<IConfiguracionRepository, ConfiguracionRepository>();
 builder.Services.AddScoped<IProductoService, ProductoService>();
 
+//Repositorios y servicios: una instancia nueva por cada petición.
+builder.Services.AddScoped<ITrasladoRepository, TrasladoRepository>();
+builder.Services.AddScoped<ITrasladoService, TrasladoService>();
+
 // 5. Construir y configurar la aplicacion
 
 var app = builder.Build();
