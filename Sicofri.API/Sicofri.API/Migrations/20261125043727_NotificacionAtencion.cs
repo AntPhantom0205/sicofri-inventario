@@ -85,4 +85,4 @@ namespace Sicofri.API.Migrations
                 column: "id_producto");
         }
     }
-}
+}//Finn de la clase

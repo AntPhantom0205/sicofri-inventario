@@ -91,11 +91,20 @@ builder.Services.AddScoped<IProductoService, ProductoService>();
 builder.Services.AddScoped<ITrasladoRepository, TrasladoRepository>();
 builder.Services.AddScoped<ITrasladoService, TrasladoService>();
 
+// Envío de avisos push: una sola instancia, porque Firebase se inicializa una vez.
+builder.Services.AddSingleton<INotificadorPush, FirebaseNotificador>();
+
+//Repositorios y Servicios: una instancia nueva por cada petición.
+builder.Services.AddScoped<IConfiguracionService, ConfiguracionService>();
+
 // 5. Construir y configurar la aplicacion
 
 var app = builder.Build();
 
 await DatosIniciales.CrearJefeInicialAsync(app.Services, app.Configuration);
+
+// Inicializa Firebase al arrancar, para detectar de inmediato si la llave está mal configurada.
+app.Services.GetRequiredService<INotificadorPush>();
 
 // Debe ir primero, para atrapar errores de todo lo que viene despues.
 app.UseMiddleware<ExceptionMiddleware>();

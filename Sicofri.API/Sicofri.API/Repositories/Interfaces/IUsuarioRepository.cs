@@ -12,5 +12,6 @@ public interface IUsuarioRepository
     Task<bool> ExisteAlgunoAsync();
     Task AgregarAsync(Usuario usuario);
     Task GuardarCambiosAsync();
+    Task QuitarTokenDeOtrosUsuariosAsync(string tokenFcm, int idUsuario);
 
 }//Fin de la interfaz

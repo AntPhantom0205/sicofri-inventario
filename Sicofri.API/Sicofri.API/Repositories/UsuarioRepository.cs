@@ -49,6 +49,20 @@ public class UsuarioRepository : IUsuarioRepository
         return await _db.Usuarios.AnyAsync();
     }//Fin del metodo ExisteAlgunoAsync
 
+    /// <summary>
+    /// Los telefonos de Calimar son compartidos: si un token ya pertenecia a otro 
+    /// usuario,
+    /// se le quita, para que los avisos lleguen solo a quien tiene la sesión abierta
+    /// en ese celular.
+    /// </summary>
+    /// 
+    public async Task QuitarTokenDeOtrosUsuariosAsync(string tokenFcm, int idUsuario)
+    {
+        await _db.Usuarios
+            .Where(u => u.TokenFcm == tokenFcm && u.IdUsuario != idUsuario)
+            .ExecuteUpdateAsync(s => s.SetProperty(u => u.TokenFcm, (string?)null));
+    }//Fin del metodo QuitarTokenDeOtroUsuarioAsync
+
     public async Task AgregarAsync(Usuario usuario)
     {
         await _db.Usuarios.AddAsync(usuario);
