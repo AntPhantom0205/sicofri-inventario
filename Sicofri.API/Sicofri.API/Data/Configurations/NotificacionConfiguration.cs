@@ -14,5 +14,16 @@ public class NotificacionConfiguration : IEntityTypeConfiguration<Notificacion>
                .WithMany(p => p.Notificaciones)
                .HasForeignKey(n => n.IdProducto)
                .OnDelete(DeleteBehavior.Cascade);
-    }//Fin del metodo NotificacionConfiguration
-}//Fin de la clase
+
+        builder.HasOne(n => n.UsuarioAtiende)
+               .WithMany()
+               .HasForeignKey(n => n.IdUsuarioAtiende)
+               .OnDelete(DeleteBehavior.Restrict);
+
+        // Una sola notificación por lote: la base de datos misma lo garantiza.
+        builder.HasIndex(n => n.IdProducto).IsUnique();
+
+        // Acelera la consulta de pendientes (la campanita).
+        builder.HasIndex(n => n.Atendida);
+    }//Fin del metodo Configure
+}//Fin de la clase NotificacionConfiguration

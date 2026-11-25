@@ -189,13 +189,26 @@ namespace Sicofri.API.Migrations
                         .HasColumnType("date")
                         .HasColumnName("fecha_generada");
 
+                    b.Property<DateTime?>("FechaHoraAtendida")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("fecha_hora_atendida");
+
                     b.Property<int>("IdProducto")
                         .HasColumnType("integer")
                         .HasColumnName("id_producto");
 
+                    b.Property<int?>("IdUsuarioAtiende")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_usuario_atiende");
+
                     b.HasKey("IdNotificacion");
 
-                    b.HasIndex("IdProducto");
+                    b.HasIndex("Atendida");
+
+                    b.HasIndex("IdProducto")
+                        .IsUnique();
+
+                    b.HasIndex("IdUsuarioAtiende");
 
                     b.ToTable("notificacion");
                 });
@@ -574,7 +587,14 @@ namespace Sicofri.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Sicofri.API.Entities.Usuario", "UsuarioAtiende")
+                        .WithMany()
+                        .HasForeignKey("IdUsuarioAtiende")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Producto");
+
+                    b.Navigation("UsuarioAtiende");
                 });
 
             modelBuilder.Entity("Sicofri.API.Entities.Pedido", b =>
