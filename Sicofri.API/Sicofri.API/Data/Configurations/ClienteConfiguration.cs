@@ -13,6 +13,10 @@ public class ClienteConfiguration : IEntityTypeConfiguration<Cliente>
         builder.Property(c => c.Nombre).HasMaxLength(60);
         builder.Property(c => c.Provincia).HasConversion<string>().HasMaxLength(20);
         builder.Property(c => c.UbicacionDetalle).HasMaxLength(150);
-    }//Fin del metodo Configure
+        builder.Property(c => c.Telefono).HasMaxLength(20);
+        builder.Property(c => c.NombreContacto).HasMaxLength(60);
 
-}//Fin de la clase
+        // Acelera el mapa, que agrupa los clientes por provincia.
+        builder.HasIndex(c => c.Provincia);
+    }//Fin del metodo Configure
+}//Fin de la clase ClienteConfiguration

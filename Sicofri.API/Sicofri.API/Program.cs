@@ -104,6 +104,10 @@ builder.Services.AddScoped<INotificacionService, NotificacionService>();
 // El despertador: revisa caducidades al arrancar y todos los dias a las 6:00 a. m.
 builder.Services.AddHostedService<RevisorCaducidadWorker>();
 
+// Repositorios y Servicios: una instancia nueva por cada peticion.
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
+builder.Services.AddScoped<IClienteService, ClienteService>();
+
 // 5. Construir y configurar la aplicacion
 
 var app = builder.Build();

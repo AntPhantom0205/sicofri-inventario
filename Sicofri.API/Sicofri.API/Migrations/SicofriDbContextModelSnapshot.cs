@@ -37,11 +37,21 @@ namespace Sicofri.API.Migrations
                         .HasColumnType("character varying(60)")
                         .HasColumnName("nombre");
 
+                    b.Property<string>("NombreContacto")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("nombre_contacto");
+
                     b.Property<string>("Provincia")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("provincia");
+
+                    b.Property<string>("Telefono")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("telefono");
 
                     b.Property<string>("UbicacionDetalle")
                         .IsRequired()
@@ -50,6 +60,8 @@ namespace Sicofri.API.Migrations
                         .HasColumnName("ubicacion_detalle");
 
                     b.HasKey("IdCliente");
+
+                    b.HasIndex("Provincia");
 
                     b.ToTable("cliente");
                 });
