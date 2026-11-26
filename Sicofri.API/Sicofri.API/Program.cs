@@ -108,6 +108,10 @@ builder.Services.AddHostedService<RevisorCaducidadWorker>();
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 
+//Repositorios y Servicios: una instancia nueva por cada peticion
+builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
+builder.Services.AddScoped<IPedidoService, PedidoService>();
+
 // 5. Construir y configurar la aplicacion
 
 var app = builder.Build();

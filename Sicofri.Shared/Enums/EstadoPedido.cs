@@ -12,6 +12,7 @@ public enum EstadoPedido
 {
      Armado = 1,
     EnViaje = 2,
-    Entregado = 3
+    Entregado = 3,
+    Cancelado = 4
 
 }//Fin de la clase
