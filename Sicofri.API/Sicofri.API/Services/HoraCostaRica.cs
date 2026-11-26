@@ -19,4 +19,19 @@ public static class HoraCostaRica
         var utc = new DateTimeOffset(DateTime.SpecifyKind(fechaUtc, DateTimeKind.Utc));
         return TimeZoneInfo.ConvertTime(utc, Zona);
     }//Fin del metodo ALocal
+
+    /// <summary>
+    /// Cuanto tiempo falta para la proxima vez que el reloj de Costa Rica marque esa hora.
+    /// Ej.: a las 22:00, faltan 8 horas para las 06:00 (del dia siguiente).
+    /// </summary>
+    public static TimeSpan TiempoHasta(TimeOnly hora)
+    {
+        DateTime ahora = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, Zona);
+        DateTime proxima = ahora.Date + hora.ToTimeSpan();
+
+        if (proxima <= ahora)
+            proxima = proxima.AddDays(1);
+
+        return proxima - ahora;
+    }//Fin del metodo TiempoHasta
 }//Fin de la clase HoraCostaRica

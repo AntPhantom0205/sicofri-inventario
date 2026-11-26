@@ -17,7 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. Controladores y documentacion
 
 builder.Services.AddControllers()
-    // Los enums viajan como texto ("Jefe") en lugar de número (1).
+    // Los enums viajan como texto ("Jefe") en lugar de numero (1).
     .AddJsonOptions(opciones =>
         opciones.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()))
     // Errores de formato del JSON: respuesta en español indicando cada campo.
@@ -77,25 +77,32 @@ builder.Services.AddAuthorization();
 builder.Services.AddSingleton<PasswordHasher>();
 builder.Services.AddSingleton<JwtService>();
 
-// Repositorios y servicios: una instancia nueva por cada petición.
+// Repositorios y servicios: una instancia nueva por cada peticion.
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 
-//Repositorios y servicios: una instancia nueva por cada petición.
+//Repositorios y servicios: una instancia nueva por cada peticion.
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 builder.Services.AddScoped<IConfiguracionRepository, ConfiguracionRepository>();
 builder.Services.AddScoped<IProductoService, ProductoService>();
 
-//Repositorios y servicios: una instancia nueva por cada petición.
+//Repositorios y servicios: una instancia nueva por cada peticion.
 builder.Services.AddScoped<ITrasladoRepository, TrasladoRepository>();
 builder.Services.AddScoped<ITrasladoService, TrasladoService>();
 
 // Envío de avisos push: una sola instancia, porque Firebase se inicializa una vez.
 builder.Services.AddSingleton<INotificadorPush, FirebaseNotificador>();
 
-//Repositorios y Servicios: una instancia nueva por cada petición.
+//Repositorios y Servicios: una instancia nueva por cada peticion.
 builder.Services.AddScoped<IConfiguracionService, ConfiguracionService>();
+
+//Repositorios y Servicios: una instancia nueva por cada peticion.
+builder.Services.AddScoped<INotificacionRepository, NotificacionRepository>();
+builder.Services.AddScoped<INotificacionService, NotificacionService>();
+
+// El despertador: revisa caducidades al arrancar y todos los dias a las 6:00 a. m.
+builder.Services.AddHostedService<RevisorCaducidadWorker>();
 
 // 5. Construir y configurar la aplicacion
 
@@ -103,7 +110,8 @@ var app = builder.Build();
 
 await DatosIniciales.CrearJefeInicialAsync(app.Services, app.Configuration);
 
-// Inicializa Firebase al arrancar, para detectar de inmediato si la llave está mal configurada.
+// Inicializa Firebase al arrancar, para detectar de inmediato si la llave esta mal
+// configurada.
 app.Services.GetRequiredService<INotificadorPush>();
 
 // Debe ir primero, para atrapar errores de todo lo que viene despues.
@@ -118,7 +126,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// El orden importa: primero se define quien eres (autenticación), y despues ver lo que se puede hacer. (autorización).
+// El orden importa: primero se define quien eres (autenticacion), y despues ver
+// lo que se puede hacer. (autorizacion).
 app.UseAuthentication();
 app.UseAuthorization();
 

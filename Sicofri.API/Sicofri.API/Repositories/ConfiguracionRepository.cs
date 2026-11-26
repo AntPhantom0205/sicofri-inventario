@@ -14,10 +14,15 @@ public class ConfiguracionRepository : IConfiguracionRepository
         _db = db;
     }
 
-    /// <summary>La tabla tiene una sola fila, creada por los datos iniciales.</summary>
+    /// <summary>
+    /// La tabla tiene una sola fila, creada por los datos iniciales.
+    /// </summary>
+    
     public async Task<Configuracion> ObtenerAsync()
     {
-        return await _db.Configuraciones.FirstOrDefaultAsync()
+        return await _db.Configuraciones
+            .OrderBy(c => c.IdConfiguracion)
+            .FirstOrDefaultAsync()
             ?? throw new InvalidOperationException("No existe la fila de configuración. Ejecute Update-Database.");
     }//Fin del metodo ObtenerAsync
     public async Task GuardarCambiosAsync()
