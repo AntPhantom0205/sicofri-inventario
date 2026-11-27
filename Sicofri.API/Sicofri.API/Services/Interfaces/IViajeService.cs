@@ -13,4 +13,7 @@ public interface IViajeService
     Task EliminarAsync(int idViaje);
     Task<ViajeDto> IniciarAsync(int idViaje, int idUsuario, bool esJefe);
     Task<ViajeDto> EntregarPedidoAsync(int idViaje, int idPedido, int idUsuario, bool esJefe);
-}//Fin de la Interfaz IViajeService
+    Task<List<ViajeDto>> ObtenerMisEntregasAsync(int idEmpleado);
+    Task<ResultadoPaginado<BitacoraViajeDto>> ObtenerBitacoraAsync(
+        EstadoViaje? estado, DateOnly? desde, DateOnly? hasta, int? idEmpleado, int pagina, int tamanoPagina);
+}//Fin de la interfaz IViajeService

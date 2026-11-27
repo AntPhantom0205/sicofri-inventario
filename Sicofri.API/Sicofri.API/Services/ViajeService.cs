@@ -200,6 +200,40 @@ public class ViajeService : IViajeService
         return ConvertirADto(await ObtenerOFallarAsync(idViaje));
     }//Fin del metodo EntregarPedidoAsync
 
+    //Mis entregas y bitacora 
+
+    /// <summary>
+    /// Viajes pendientes del empleado: primero el que esta en curso,
+    /// despues los programados, del mas próximo al mas lejano.
+    /// </summary>
+    public async Task<List<ViajeDto>> ObtenerMisEntregasAsync(int idEmpleado)
+    {
+        var viajes = await _viajes.ObtenerActivosDeEmpleadoAsync(idEmpleado);
+
+        return viajes
+            .OrderBy(v => v.Estado == EstadoViaje.EnCurso ? 0 : 1)
+            .ThenBy(v => v.Fecha)
+            .ThenBy(v => v.IdViaje)
+            .Select(ConvertirADto)
+            .ToList();
+    }
+
+    public async Task<ResultadoPaginado<BitacoraViajeDto>> ObtenerBitacoraAsync(
+        EstadoViaje? estado, DateOnly? desde, DateOnly? hasta, int? idEmpleado, int pagina, int tamanoPagina)
+    {
+        if (desde.HasValue && hasta.HasValue && desde > hasta)
+            throw new ReglaNegocioException("La fecha 'desde' no puede ser posterior a la fecha 'hasta'.");
+
+        pagina = Math.Max(pagina, 1);
+        tamanoPagina = tamanoPagina is < 1 or > TamanoPaginaMaximo ? TamanoPaginaPorDefecto : tamanoPagina;
+
+        var (viajes, total) = await _viajes.BuscarParaBitacoraAsync(
+            estado, desde, hasta, idEmpleado, (pagina - 1) * tamanoPagina, tamanoPagina);
+
+        var elementos = viajes.Select(ConvertirABitacora).ToList();
+        return new ResultadoPaginado<BitacoraViajeDto>(elementos, total, pagina, tamanoPagina);
+    }//Fin del metodo ObtenerBitacoraAsync
+
     //Validaciones
 
     private static void ValidarFechaViaje(DateOnly fecha, DateOnly hoy)
@@ -315,6 +349,42 @@ public class ViajeService : IViajeService
             v.Pedidos.Count(p => p.Estado == EstadoPedido.Entregado),
             v.Pedidos.SelectMany(p => p.Lineas).Sum(l => l.Cantidad));
     }//Fin del metodo ConvertirResumen
+
+    private static BitacoraViajeDto ConvertirABitacora(Viaje v)
+    {
+        // La duracion solo existe cuando el viaje ya inicio y termino.
+        int? duracion = v.FechaHoraInicio.HasValue && v.FechaHoraFin.HasValue
+            ? (int)Math.Round((v.FechaHoraFin.Value - v.FechaHoraInicio.Value).TotalMinutes)
+            : null;
+
+        var pedidos = v.Pedidos
+            .OrderBy(p => p.IdPedido)
+            .Select(p => new BitacoraPedidoDto(
+                p.IdPedido,
+                NumeroPedido.Formatear(p.IdPedido),
+                p.Cliente.Nombre,
+                p.Cliente.Provincia.NombreParaMostrar(),
+                p.Estado,
+                p.Lineas.Sum(l => l.Cantidad),
+                p.FechaHoraEntregado.HasValue ? HoraCostaRica.ALocal(p.FechaHoraEntregado.Value) : null,
+                p.UsuarioEntrega?.Nombre))
+            .ToList();
+
+        return new BitacoraViajeDto(
+            v.IdViaje,
+            NumeroViaje.Formatear(v.IdViaje),
+            v.Fecha,
+            v.Estado,
+            v.Encargados.Select(e => e.Usuario.Nombre).OrderBy(n => n).ToList(),
+            v.UsuarioCreador.Nombre,
+            v.FechaHoraInicio.HasValue ? HoraCostaRica.ALocal(v.FechaHoraInicio.Value) : null,
+            v.FechaHoraFin.HasValue ? HoraCostaRica.ALocal(v.FechaHoraFin.Value) : null,
+            duracion,
+            pedidos.Count,
+            pedidos.Count(p => p.Estado == EstadoPedido.Entregado),
+            pedidos.Sum(p => p.TotalKg),
+            pedidos);
+    }//Fin del metodo ConvertirBitacora
 
     private static ViajeDto ConvertirADto(Viaje v)
     {

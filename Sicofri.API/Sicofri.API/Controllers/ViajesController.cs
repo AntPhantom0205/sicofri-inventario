@@ -48,6 +48,34 @@ public class ViajesController : ControllerBase
         return Ok(await _viajeService.ObtenerPorIdAsync(id));
     }//Fin del metodo ObtenerPorId
 
+    /// <summary>
+    /// "Mis entregas": los viajes Programados y EnCurso del empleado con sesión,
+    /// con todo el detalle para la ruta. Primero el que está en curso.
+    /// </summary>
+    [HttpGet("mis-entregas")]
+    [Authorize(Roles = nameof(Rol.Empleado))]
+    public async Task<ActionResult<List<ViajeDto>>> ObtenerMisEntregas()
+    {
+        return Ok(await _viajeService.ObtenerMisEntregasAsync(User.ObtenerIdUsuario()));
+    }
+
+    /// <summary>
+    /// Bitacora de entregas: historial de todos los viajes.
+    /// Filtros opcionales: rango de fechas, empleado encargado y estado.
+    /// </summary>
+    [HttpGet("bitacora")]
+    [Authorize(Roles = RolesAdministrativos)]
+    public async Task<ActionResult<ResultadoPaginado<BitacoraViajeDto>>> ObtenerBitacora(
+        [FromQuery] DateOnly? desde,
+        [FromQuery] DateOnly? hasta,
+        [FromQuery] int? idEmpleado,
+        [FromQuery] EstadoViaje? estado,
+        [FromQuery] int pagina = 1,
+        [FromQuery] int tamanoPagina = 20)
+    {
+        return Ok(await _viajeService.ObtenerBitacoraAsync(estado, desde, hasta, idEmpleado, pagina, tamanoPagina));
+    }//Fin del metodo ObtenerMisEntregas
+
     /// <summary>Programa un viaje con 1 a 3 empleados y sus pedidos.</summary>
     [HttpPost]
     [Authorize(Roles = RolesAdministrativos)]
