@@ -24,6 +24,10 @@ builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(opciones =>
         opciones.InvalidModelStateResponseFactory = RespuestaValidacion.Crear);
 
+// La documentación de Swagger tambien debe mostrar los enums como texto.
+builder.Services.ConfigureHttpJsonOptions(opciones =>
+    opciones.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
 builder.Services.AddOpenApi(opciones =>
     opciones.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 
@@ -111,6 +115,10 @@ builder.Services.AddScoped<IClienteService, ClienteService>();
 //Repositorios y Servicios: una instancia nueva por cada peticion
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
+
+//Repositorios y Servicios: una instancia nueva por cada peticion
+builder.Services.AddScoped<IViajeRepository, ViajeRepository>();
+builder.Services.AddScoped<IViajeService, ViajeService>();
 
 // 5. Construir y configurar la aplicacion
 
