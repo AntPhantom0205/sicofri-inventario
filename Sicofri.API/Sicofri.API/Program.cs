@@ -81,42 +81,42 @@ builder.Services.AddAuthorization();
 builder.Services.AddSingleton<PasswordHasher>();
 builder.Services.AddSingleton<JwtService>();
 
-// Repositorios y servicios: una instancia nueva por cada peticion.
+//Usuario
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 
-//Repositorios y servicios: una instancia nueva por cada peticion.
+//Producto
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 builder.Services.AddScoped<IConfiguracionRepository, ConfiguracionRepository>();
 builder.Services.AddScoped<IProductoService, ProductoService>();
 
-//Repositorios y servicios: una instancia nueva por cada peticion.
+//Traslado
 builder.Services.AddScoped<ITrasladoRepository, TrasladoRepository>();
 builder.Services.AddScoped<ITrasladoService, TrasladoService>();
 
-// Envío de avisos push: una sola instancia, porque Firebase se inicializa una vez.
+//Notificacion Push
 builder.Services.AddSingleton<INotificadorPush, FirebaseNotificador>();
 
-//Repositorios y Servicios: una instancia nueva por cada peticion.
+//Configuracion Service
 builder.Services.AddScoped<IConfiguracionService, ConfiguracionService>();
 
-//Repositorios y Servicios: una instancia nueva por cada peticion.
+//Notificacion
 builder.Services.AddScoped<INotificacionRepository, NotificacionRepository>();
 builder.Services.AddScoped<INotificacionService, NotificacionService>();
 
 // El despertador: revisa caducidades al arrancar y todos los dias a las 6:00 a. m.
 builder.Services.AddHostedService<RevisorCaducidadWorker>();
 
-// Repositorios y Servicios: una instancia nueva por cada peticion.
+//Cliente
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 
-//Repositorios y Servicios: una instancia nueva por cada peticion
+//Pedido
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
 
-//Repositorios y Servicios: una instancia nueva por cada peticion
+//Viaje
 builder.Services.AddScoped<IViajeRepository, ViajeRepository>();
 builder.Services.AddScoped<IViajeService, ViajeService>();
 
@@ -133,7 +133,10 @@ app.Services.GetRequiredService<INotificadorPush>();
 // Debe ir primero, para atrapar errores de todo lo que viene despues.
 app.UseMiddleware<ExceptionMiddleware>();
 
-if (app.Environment.IsDevelopment())
+// Swagger: siempre en desarrollo; en la nube solo si la configuracion
+// "HabilitarSwagger" es true.
+if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>
+    ("HabilitarSwagger"))
 {
     app.MapOpenApi();
     app.UseSwaggerUI(opciones =>

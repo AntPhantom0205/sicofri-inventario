@@ -19,31 +19,41 @@ public class FirebaseNotificador : INotificadorPush
     {
         _logger = logger;
 
+        // En la nube: la llave viene como texto Base64 en la configuracion.
+        // En la computadora de desarrollo: viene como ruta a un archivo.
+        string? base64 = configuracion["Firebase:CredencialesBase64"];
         string? ruta = configuracion["Firebase:RutaCredenciales"];
 
-        if (string.IsNullOrWhiteSpace(ruta) || !File.Exists(ruta))
-        {
-            _logger.LogWarning(
-                "Firebase no está configurado: no se encontró la llave en '{Ruta}'. " +
-                "Las notificaciones se guardarán, pero no se enviarán avisos push.", ruta);
-            return;
-        }
+        GoogleCredential credencial;
 
         try
         {
-            var app = FirebaseApp.DefaultInstance ?? FirebaseApp.Create(new AppOptions
+            if (!string.IsNullOrWhiteSpace(base64))
             {
-                Credential = GoogleCredential.FromFile(ruta)
-            });
+                string json = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(base64));
+                credencial = GoogleCredential.FromJson(json);
+            }
+            else if (!string.IsNullOrWhiteSpace(ruta) && File.Exists(ruta))
+            {
+                credencial = GoogleCredential.FromFile(ruta);
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "Firebase no está configurado (no hay CredencialesBase64 ni un archivo en '{Ruta}'). " +
+                    "Las notificaciones se guardarán, pero no se enviarán avisos push.", ruta);
+                return;
+            }
 
+            var app = FirebaseApp.DefaultInstance ?? FirebaseApp.Create(new AppOptions { Credential = credencial });
             _mensajeria = FirebaseMessaging.GetMessaging(app);
             _logger.LogInformation("Firebase inicializado correctamente.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "No se pudo inicializar Firebase con la llave '{Ruta}'. Revise que el archivo sea válido.", ruta);
+            _logger.LogError(ex, "No se pudo inicializar Firebase. Revise que la llave sea válida.");
         }
-    }
+    }//Fin del metodo FirebaseNotificador
 
     public bool EstaDisponible => _mensajeria is not null;
 
@@ -78,7 +88,7 @@ public class FirebaseNotificador : INotificadorPush
 
                 _logger.LogWarning("No se pudo enviar el aviso a un dispositivo: {Motivo}", resultado.Exception?.Message);
 
-                // Token que ya no sirve (app desinstalada, token vencido o inválido).
+                // Token que ya no sirve (app desinstalada, token vencido o invalido).
                 if (resultado.Exception?.MessagingErrorCode is MessagingErrorCode.Unregistered
                                                             or MessagingErrorCode.InvalidArgument)
                 {
@@ -88,7 +98,7 @@ public class FirebaseNotificador : INotificadorPush
         }
         catch (Exception ex)
         {
-            // Un fallo de Firebase (sin internet, etc.) nunca debe tumbar la revisión de caducidades.
+            // Un fallo de Firebase (sin internet, etc.) nunca debe tumbar la revision de caducidades.
             _logger.LogError(ex, "Error al comunicarse con Firebase.");
         }
 
